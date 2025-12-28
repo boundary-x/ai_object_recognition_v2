@@ -1,4 +1,4 @@
-/* style.css - Boundary X: Object Detection (Data Info Box Added) */
+/* style.css - Boundary X: Object Detection (4:3 Ratio Fixed) */
 
 :root {
   /* Palette */
@@ -100,7 +100,7 @@ main {
 .canvas-container { 
     width: 100%;
     max-width: 400px;
-    aspect-ratio: 4/3; 
+    aspect-ratio: 4/3; /* [수정] 4:3 비율로 복구 */
     border-radius: var(--radius-card);
     overflow: hidden;
     background: #000;
@@ -242,7 +242,7 @@ input:focus, select:focus {
   color: #ffb3b9;
 }
 
-/* [NEW] Data Info Box Style */
+/* Data Info Box Style */
 .data-info-box {
   background-color: #FFFFFF;
   border: 1px solid var(--border-color);
@@ -306,7 +306,6 @@ input:focus, select:focus {
 }
 
 .data-display {
-  /* [변경] 프리텐다드 폰트 적용 */
   font-family: 'Pretendard', sans-serif !important; 
   background: #000;
   color: #0f0;
@@ -417,6 +416,49 @@ address {
   color: #666;
 }
 
+.footer-links {
+  display: flex;
+  gap: 4rem;
+  flex-wrap: wrap;
+}
+
+.link-column h4 {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #FFFFFF;
+  margin-bottom: 1.2rem;
+}
+
+.link-column ul {
+  list-style: none;
+  padding: 0;
+}
+
+.link-column li {
+  margin-bottom: 1.2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.link-column a {
+  text-decoration: none;
+  color: #CCCCCC;
+  font-weight: 500;
+  transition: color 0.2s;
+}
+
+.link-column a:hover {
+  color: #FFFFFF;
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+
+.link-desc {
+  font-size: 0.8rem;
+  color: #666;
+}
+
 /* PC & Tablet Layout */
 @media (min-width: 768px) {
   main {
@@ -439,6 +481,8 @@ address {
 
 /* Mobile Layout */
 @media (max-width: 767px) {
+  .footer-top { flex-direction: column; gap: 3rem; }
+  .footer-links { gap: 2.5rem; flex-direction: column; }
   header { padding: 0.8rem 1rem; }
   .title { font-size: 1rem; }
   .title img { height: 20px; }
