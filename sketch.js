@@ -1,6 +1,6 @@
 /**
  * sketch.js
- * Boundary X Object Detection (Multi-Select & High Response)
+ * Boundary X Object Detection (Black Slider & Footer Fixed)
  */
 
 // Bluetooth UUIDs
@@ -15,7 +15,7 @@ let isConnected = false;
 let bluetoothStatus = "연결 대기 중";
 let isSendingData = false; 
 
-// [최적화] 전송 속도 0.1초(100ms)로 변경 (반응성 향상)
+// [최적화] 전송 속도 0.1초(100ms)로 변경
 let lastSentTime = 0; 
 const SEND_INTERVAL = 100; 
 
@@ -40,7 +40,7 @@ let startDetectionButton, stopDetectionButton;
 let objectSelect, confidenceSlider;
 let confidenceLabel;
 let dataDisplay;
-let selectedObjectsListDiv; // 태그 표시 영역
+let selectedObjectsListDiv; 
 
 function preload() {
   detector = ml5.objectDetector("cocossd");
@@ -107,7 +107,7 @@ function createUI() {
   // Object Selection Dropdown
   objectSelect = createSelect();
   objectSelect.parent('object-select-container');
-  objectSelect.option("사물을 선택하세요", ""); // 기본값
+  objectSelect.option("사물을 선택하세요", ""); 
   
   const objectList = [
     "person", "bicycle", "car", "motorcycle", "airplane", "bus", "train", "truck", "boat", "traffic light",
@@ -122,13 +122,12 @@ function createUI() {
   ];
   objectList.forEach((item) => objectSelect.option(item));
   
-  // [다중 선택 로직] 선택 시 리스트에 추가
   objectSelect.changed(() => {
       const val = objectSelect.value();
       if(val && !selectedObjects.includes(val)) {
           addSelectedObject(val);
       }
-      objectSelect.value(""); // 선택 후 드롭다운 초기화
+      objectSelect.value(""); 
   });
 
   selectedObjectsListDiv = select('#selected-objects-list');
@@ -136,14 +135,24 @@ function createUI() {
   // Confidence Slider
   confidenceSlider = createSlider(0, 100, 50);
   confidenceSlider.parent('confidence-container');
+  
+  // [NEW] 슬라이더 채움 효과 초기화
+  updateSliderFill(confidenceSlider);
+
   confidenceSlider.input(() => {
     confidenceThreshold = confidenceSlider.value();
     if(confidenceLabel) confidenceLabel.html(`정확도 기준: ${confidenceThreshold}%`);
+    // [NEW] 슬라이더 움직일 때 채움 효과 업데이트
+    updateSliderFill(confidenceSlider);
   });
 
+  // [NEW] 라벨 디자인 강화 (잘 보이게)
   confidenceLabel = createDiv(`정확도 기준: ${confidenceThreshold}%`);
   confidenceLabel.parent('confidence-container');
-  confidenceLabel.style('font-size', '0.9rem').style('color', '#666');
+  confidenceLabel.style('font-size', '1.2rem'); // 폰트 크기 키움
+  confidenceLabel.style('font-weight', '700');   // 굵게
+  confidenceLabel.style('color', '#000000');     // 진한 검정색
+  confidenceLabel.style('margin-top', '10px');
 
   // Control Buttons
   startDetectionButton = createButton("사물 인식 시작");
@@ -172,21 +181,25 @@ function createUI() {
   updateBluetoothStatusUI();
 }
 
-// [다중 선택] 사물 추가 함수
+// [NEW] 슬라이더 배경 채움 효과 함수
+function updateSliderFill(slider) {
+    const val = (slider.value() - slider.elt.min) / (slider.elt.max - slider.elt.min) * 100;
+    // 왼쪽은 검은색, 오른쪽은 회색
+    slider.elt.style.background = `linear-gradient(to right, #000000 ${val}%, #D1D5DB ${val}%)`;
+}
+
 function addSelectedObject(objName) {
     selectedObjects.push(objName);
     renderSelectedObjects();
 }
 
-// [다중 선택] 사물 삭제 함수
 function removeSelectedObject(objName) {
     selectedObjects = selectedObjects.filter(item => item !== objName);
     renderSelectedObjects();
 }
 
-// [다중 선택] 리스트 렌더링 (태그 표시)
 function renderSelectedObjects() {
-    selectedObjectsListDiv.html(''); // 초기화
+    selectedObjectsListDiv.html(''); 
     
     selectedObjects.forEach(obj => {
         const tag = createDiv();
@@ -194,7 +207,6 @@ function renderSelectedObjects() {
         tag.html(`${obj} <span class="tag-remove">&times;</span>`);
         tag.parent(selectedObjectsListDiv);
         
-        // 삭제 버튼 이벤트
         tag.mouseClicked(() => removeSelectedObject(obj));
     });
 }
@@ -226,7 +238,6 @@ function gotDetections(error, results) {
   }
   detections = results;
   
-  // 0.1초 휴식 후 재호출 (발열 방지)
   if (isObjectDetectionActive) {
     setTimeout(() => {
         detector.detect(video, gotDetections); 
@@ -251,26 +262,21 @@ function draw() {
     let highestConfidenceObject = null;
     let detectedCount = 0; 
 
-    // 1. 선택된 사물 리스트에 포함된 것들만 필터링
     detections.forEach((object) => {
-      // 배열에 포함되어 있고, 정확도가 기준 이상인 경우
       if (selectedObjects.includes(object.label) && object.confidence * 100 >= confidenceThreshold) {
         
-        // 전체 개수 카운트 (d값)
         detectedCount++;
 
-        // 가장 정확도 높은 1개 찾기 (전송 기준)
         if (!highestConfidenceObject || object.confidence > highestConfidenceObject.confidence) {
           highestConfidenceObject = object;
         }
 
-        // --- 화면 그리기 (모든 감지된 사물) ---
         let x = isFlipped ? width - object.x - object.width : object.x;
         let y = object.y;
         let w = object.width;
         let h = object.height;
 
-        stroke(0, 255, 0); // 기본 초록색
+        stroke(0, 255, 0); 
         strokeWeight(2);
         noFill();
         rect(x, y, w, h);
@@ -286,25 +292,20 @@ function draw() {
       }
     });
 
-    // 2. 가장 정확한 사물 강조 및 데이터 전송
     if (highestConfidenceObject) {
         let obj = highestConfidenceObject;
         
-        // 강조 표시 (파란색)
         let bx = isFlipped ? width - obj.x - obj.width : obj.x;
         stroke(0, 100, 255);
         strokeWeight(4);
         noFill();
         rect(bx, obj.y, obj.width, obj.height);
         
-        // 좌표 계산
         let centerX = isFlipped ? width - (obj.x + obj.width / 2) : obj.x + obj.width / 2;
         let centerY = obj.y + obj.height / 2;
         
-        // [반응성 최우선] 0.1초마다 전송
         let currentTime = millis();
         if (currentTime - lastSentTime > SEND_INTERVAL) {
-            // detectedCount는 선택된 사물들의 총합
             sendBluetoothData(centerX, centerY, obj.width, obj.height, detectedCount);
             lastSentTime = currentTime;
             
