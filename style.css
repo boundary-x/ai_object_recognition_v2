@@ -1,4 +1,4 @@
-/* style.css - Boundary X: Object Detection (Black Theme Slider) */
+/* style.css - Boundary X: Object Detection (Data Info Box Added) */
 
 :root {
   /* Palette */
@@ -242,6 +242,44 @@ input:focus, select:focus {
   color: #ffb3b9;
 }
 
+/* [NEW] Data Info Box Style */
+.data-info-box {
+  background-color: #FFFFFF;
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  padding: 1.2rem;
+  margin-bottom: 1rem;
+}
+
+.info-title {
+  font-size: 1rem !important;
+  color: #333 !important;
+  margin-bottom: 0.5rem !important;
+}
+
+.info-desc {
+  font-size: 0.9rem !important;
+  color: #666 !important;
+  margin-bottom: 1rem !important;
+  text-align: left !important;
+}
+
+.info-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.info-tags span {
+  background: #F1F3F4;
+  color: #333;
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  font-family: 'Pretendard', sans-serif;
+  font-weight: 500;
+}
+
 /* Status & Data Display */
 #bluetoothStatus {
   margin-top: 1rem;
@@ -268,48 +306,48 @@ input:focus, select:focus {
 }
 
 .data-display {
-  font-family: 'Courier New', monospace;
+  /* [변경] 프리텐다드 폰트 적용 */
+  font-family: 'Pretendard', sans-serif !important; 
   background: #000;
   color: #0f0;
-  padding: 1rem;
-  border-radius: 8px;
-  font-size: 0.9rem;
+  padding: 1.2rem;
+  border-radius: 12px;
+  font-size: 1rem;
   text-align: center;
+  font-weight: 600;
+  letter-spacing: 0.5px;
 }
 
-/* [핵심 수정] Custom Black Range Slider (Image-like) */
+/* Custom Black Range Slider */
 input[type="range"] {
   -webkit-appearance: none;
   width: 100%;
   height: 10px;
   border-radius: 5px;
-  background: #D1D5DB; /* 기본 회색 트랙 */
-  /* 채워지는 부분은 JS로 제어 (linear-gradient 사용) */
+  background: #D1D5DB;
   outline: none;
   margin: 10px 0;
   padding: 0;
   border: none;
 }
 
-/* Chrome, Safari, Edge Thumb */
 input[type="range"]::-webkit-slider-thumb {
   -webkit-appearance: none;
   appearance: none;
   width: 24px;
   height: 24px;
   border-radius: 50%;
-  background: #000000; /* 블랙 원형 버튼 */
+  background: #000000;
   cursor: pointer;
   box-shadow: 0 2px 6px rgba(0,0,0,0.3);
   transition: transform 0.2s;
-  margin-top: -1px; /* 위치 미세 조정 */
+  margin-top: -1px;
 }
 
 input[type="range"]::-webkit-slider-thumb:hover {
   transform: scale(1.1);
 }
 
-/* Firefox Thumb */
 input[type="range"]::-moz-range-thumb {
   width: 24px;
   height: 24px;
@@ -320,7 +358,7 @@ input[type="range"]::-moz-range-thumb {
   box-shadow: 0 2px 6px rgba(0,0,0,0.3);
 }
 
-/* Footer Style (통일) */
+/* Footer Style */
 footer {
   background-color: #000000;
   color: #FFFFFF;
@@ -379,50 +417,7 @@ address {
   color: #666;
 }
 
-.footer-links {
-  display: flex;
-  gap: 4rem;
-  flex-wrap: wrap;
-}
-
-.link-column h4 {
-  font-size: 0.95rem;
-  font-weight: 700;
-  color: #FFFFFF;
-  margin-bottom: 1.2rem;
-}
-
-.link-column ul {
-  list-style: none;
-  padding: 0;
-}
-
-.link-column li {
-  margin-bottom: 1.2rem;
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.link-column a {
-  text-decoration: none;
-  color: #CCCCCC;
-  font-weight: 500;
-  transition: color 0.2s;
-}
-
-.link-column a:hover {
-  color: #FFFFFF;
-  text-decoration: underline;
-  text-underline-offset: 4px;
-}
-
-.link-desc {
-  font-size: 0.8rem;
-  color: #666;
-}
-
-/* PC & Tablet Layout (가로 배치) */
+/* PC & Tablet Layout */
 @media (min-width: 768px) {
   main {
     flex-direction: row;       
