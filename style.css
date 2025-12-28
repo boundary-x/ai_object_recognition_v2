@@ -1,4 +1,4 @@
-/* style.css - Boundary X: Object Detection (Multi-Select & Responsive) */
+/* style.css - Boundary X: Object Detection (Black Theme Slider) */
 
 :root {
   /* Palette */
@@ -208,7 +208,7 @@ input:focus, select:focus {
   box-shadow: 0 0 0 2px rgba(0,0,0,0.1);
 }
 
-/* [NEW] Selected Object Tags */
+/* Selected Object Tags */
 .selected-tags {
   display: flex;
   flex-wrap: wrap;
@@ -241,7 +241,6 @@ input:focus, select:focus {
 .tag-remove:hover {
   color: #ffb3b9;
 }
-
 
 /* Status & Data Display */
 #bluetoothStatus {
@@ -278,25 +277,50 @@ input:focus, select:focus {
   text-align: center;
 }
 
-/* Slider */
+/* [핵심 수정] Custom Black Range Slider (Image-like) */
 input[type="range"] {
+  -webkit-appearance: none;
   width: 100%;
-  height: 6px;
-  background: #D1D5DB;
-  border-radius: 3px;
+  height: 10px;
+  border-radius: 5px;
+  background: #D1D5DB; /* 기본 회색 트랙 */
+  /* 채워지는 부분은 JS로 제어 (linear-gradient 사용) */
   outline: none;
-  -webkit-appearance: none;
-}
-input[type="range"]::-webkit-slider-thumb {
-  -webkit-appearance: none;
-  width: 20px;
-  height: 20px;
-  border-radius: 50%;
-  background: #000;
-  cursor: pointer;
+  margin: 10px 0;
+  padding: 0;
+  border: none;
 }
 
-/* Footer Style */
+/* Chrome, Safari, Edge Thumb */
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: #000000; /* 블랙 원형 버튼 */
+  cursor: pointer;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+  transition: transform 0.2s;
+  margin-top: -1px; /* 위치 미세 조정 */
+}
+
+input[type="range"]::-webkit-slider-thumb:hover {
+  transform: scale(1.1);
+}
+
+/* Firefox Thumb */
+input[type="range"]::-moz-range-thumb {
+  width: 24px;
+  height: 24px;
+  border: none;
+  border-radius: 50%;
+  background: #000000;
+  cursor: pointer;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+}
+
+/* Footer Style (통일) */
 footer {
   background-color: #000000;
   color: #FFFFFF;
@@ -351,6 +375,49 @@ address {
 
 .copyright {
   margin-top: 0.8rem;
+  font-size: 0.8rem;
+  color: #666;
+}
+
+.footer-links {
+  display: flex;
+  gap: 4rem;
+  flex-wrap: wrap;
+}
+
+.link-column h4 {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #FFFFFF;
+  margin-bottom: 1.2rem;
+}
+
+.link-column ul {
+  list-style: none;
+  padding: 0;
+}
+
+.link-column li {
+  margin-bottom: 1.2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.link-column a {
+  text-decoration: none;
+  color: #CCCCCC;
+  font-weight: 500;
+  transition: color 0.2s;
+}
+
+.link-column a:hover {
+  color: #FFFFFF;
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+
+.link-desc {
   font-size: 0.8rem;
   color: #666;
 }
