@@ -1,6 +1,6 @@
 /**
  * sketch.js
- * Boundary X Object Detection (Black Slider & Footer Fixed)
+ * Boundary X Object Detection (UI Updated)
  */
 
 // Bluetooth UUIDs
@@ -15,22 +15,18 @@ let isConnected = false;
 let bluetoothStatus = "연결 대기 중";
 let isSendingData = false; 
 
-// [최적화] 전송 속도 0.1초(100ms)로 변경
 let lastSentTime = 0; 
-const SEND_INTERVAL = 100; 
+const SEND_INTERVAL = 100; // 0.1초
 
 // Video and ML variables
 let video;
 let detector;
 let detections = [];
-
-// [다중 선택] 선택된 사물들을 저장할 배열
 let selectedObjects = []; 
-
 let confidenceThreshold = 50; 
 let isObjectDetectionActive = false; 
 
-// Camera control variables
+// Camera variables
 let facingMode = "user"; 
 let isFlipped = false;  
 
@@ -136,22 +132,19 @@ function createUI() {
   confidenceSlider = createSlider(0, 100, 50);
   confidenceSlider.parent('confidence-container');
   
-  // [NEW] 슬라이더 채움 효과 초기화
-  updateSliderFill(confidenceSlider);
+  updateSliderFill(confidenceSlider); // 초기화
 
   confidenceSlider.input(() => {
     confidenceThreshold = confidenceSlider.value();
     if(confidenceLabel) confidenceLabel.html(`정확도 기준: ${confidenceThreshold}%`);
-    // [NEW] 슬라이더 움직일 때 채움 효과 업데이트
-    updateSliderFill(confidenceSlider);
+    updateSliderFill(confidenceSlider); // 업데이트
   });
 
-  // [NEW] 라벨 디자인 강화 (잘 보이게)
   confidenceLabel = createDiv(`정확도 기준: ${confidenceThreshold}%`);
   confidenceLabel.parent('confidence-container');
-  confidenceLabel.style('font-size', '1.2rem'); // 폰트 크기 키움
-  confidenceLabel.style('font-weight', '700');   // 굵게
-  confidenceLabel.style('color', '#000000');     // 진한 검정색
+  confidenceLabel.style('font-size', '1.2rem');
+  confidenceLabel.style('font-weight', '700');
+  confidenceLabel.style('color', '#000000');
   confidenceLabel.style('margin-top', '10px');
 
   // Control Buttons
@@ -181,10 +174,8 @@ function createUI() {
   updateBluetoothStatusUI();
 }
 
-// [NEW] 슬라이더 배경 채움 효과 함수
 function updateSliderFill(slider) {
     const val = (slider.value() - slider.elt.min) / (slider.elt.max - slider.elt.min) * 100;
-    // 왼쪽은 검은색, 오른쪽은 회색
     slider.elt.style.background = `linear-gradient(to right, #000000 ${val}%, #D1D5DB ${val}%)`;
 }
 
@@ -316,8 +307,6 @@ function draw() {
     }
   }
 }
-
-/* --- Bluetooth Logic --- */
 
 async function connectBluetooth() {
   try {
