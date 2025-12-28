@@ -1,7 +1,7 @@
 /**
  * sketch.js
  * Boundary X Object Detection
- * Fixed: Camera Switch Bug (Resource Lock & Constraints)
+ * Fixed: Camera Switch Bug & 4:3 Ratio
  */
 
 // Bluetooth UUIDs
@@ -17,7 +17,7 @@ let bluetoothStatus = "연결 대기 중";
 let isSendingData = false; 
 
 let lastSentTime = 0; 
-const SEND_INTERVAL = 100; // 0.1초 전송
+const SEND_INTERVAL = 100; 
 
 // Video and ML variables
 let video;
@@ -31,7 +31,7 @@ let wasDetectingBeforeSwitch = false;
 // Camera variables
 let facingMode = "user"; 
 let isFlipped = false;  
-let isVideoReady = false; // 카메라 준비 상태 체크
+let isVideoReady = false; 
 
 // UI elements
 let flipButton, switchCameraButton, connectBluetoothButton, disconnectBluetoothButton;
@@ -46,7 +46,8 @@ function preload() {
 }
 
 function setup() {
-  let canvas = createCanvas(400, 400); // 1:1 정사각형 캔버스
+  // [수정] 400x300 (4:3 비율) 캔버스로 변경
+  let canvas = createCanvas(400, 300);
   canvas.parent('p5-container');
   canvas.style('border-radius', '16px');
   
@@ -55,28 +56,24 @@ function setup() {
 }
 
 function setupCamera() {
-  isVideoReady = false; // 초기화 시작
+  isVideoReady = false;
 
   let constraints = {
     video: {
       facingMode: facingMode
-      // [수정] width, height 제약을 제거하여 호환성 높임
     },
     audio: false
   };
 
   video = createCapture(constraints);
-  video.hide(); // HTML 요소는 숨김
+  video.hide(); 
 
-  // [수정] 비디오 스트림이 실제로 들어오는지 체크하는 로직
   let videoLoadCheck = setInterval(() => {
-    // readyState 2 이상이고, 너비가 0보다 커야 진짜 켜진 것임
     if (video.elt.readyState >= 2 && video.elt.videoWidth > 0) {
       isVideoReady = true;
       clearInterval(videoLoadCheck);
       console.log(`Camera Loaded: ${facingMode} (${video.elt.videoWidth}x${video.elt.videoHeight})`);
       
-      // 카메라 전환 전에 인식이 켜져 있었다면 다시 켜기
       if (wasDetectingBeforeSwitch) {
         startObjectDetection();
         wasDetectingBeforeSwitch = false;
@@ -85,12 +82,11 @@ function setupCamera() {
   }, 100);
 }
 
-// 카메라 자원 완전 해제
 function stopVideo() {
     if (video) {
         if (video.elt.srcObject) {
             const tracks = video.elt.srcObject.getTracks();
-            tracks.forEach(track => track.stop()); // 하드웨어 전원 끄기
+            tracks.forEach(track => track.stop());
         }
         video.remove();
         video = null;
@@ -226,17 +222,14 @@ function toggleFlip() {
   isFlipped = !isFlipped;
 }
 
-// [핵심 수정] 카메라 전환 시 딜레이(0.5초)를 줘서 충돌 방지
 function switchCamera() {
   wasDetectingBeforeSwitch = isObjectDetectionActive;
-  isObjectDetectionActive = false; // AI 멈춤
+  isObjectDetectionActive = false; 
   
-  stopVideo(); // 기존 카메라 끄기
+  stopVideo(); 
   isVideoReady = false;
   
   facingMode = facingMode === "user" ? "environment" : "user";
-  
-  // 500ms(0.5초) 후 재시작 - 모바일 안정성 확보
   setTimeout(setupCamera, 500);
 }
 
@@ -261,7 +254,6 @@ function gotDetections(error, results) {
   }
   detections = results;
   
-  // 카메라가 준비된 상태에서만 재귀 호출 (0.1초 딜레이)
   if (isObjectDetectionActive && isVideoReady) {
     setTimeout(() => {
         detector.detect(video, gotDetections); 
@@ -270,7 +262,7 @@ function gotDetections(error, results) {
 }
 
 function draw() {
-  background(0); // 로딩 중 검은 화면
+  background(0); 
 
   if (!isVideoReady || !video || video.width === 0) {
     fill(255);
@@ -280,58 +272,38 @@ function draw() {
     return;
   }
 
-  // [센터 크롭] 원본 비율 유지하며 1:1 캔버스에 꽉 채우기
-  let vw = video.width;
-  let vh = video.height;
-  let minDim = min(vw, vh); 
-  let sx = (vw - minDim) / 2;
-  let sy = (vh - minDim) / 2;
-
+  // [수정] 4:3 전체 화면 그리기 (크롭 없음)
+  // 비디오가 캔버스보다 크면 자동으로 축소되어 그려짐 (fit)
   push();
   if (isFlipped) {
     translate(width, 0);
     scale(-1, 1);
   }
-  // (소스, 캔버스x,y,w,h, 소스x,y,w,h)
-  image(video, 0, 0, width, height, sx, sy, minDim, minDim);
+  image(video, 0, 0, width, height);
   pop();
 
   if (isObjectDetectionActive && detections.length > 0) {
     let highestConfidenceObject = null;
     let detectedCount = 0; 
 
+    // 화면 비율 계산 (비디오 원본 크기 vs 캔버스 크기)
+    let scaleX = width / video.width;
+    let scaleY = height / video.height;
+
     detections.forEach((object) => {
-      // 선택된 사물이고 & 정확도 기준 넘으면
       if (selectedObjects.includes(object.label) && object.confidence * 100 >= confidenceThreshold) {
         
         detectedCount++;
 
-        // 가장 정확도 높은 놈 찾기
         if (!highestConfidenceObject || object.confidence > highestConfidenceObject.confidence) {
           highestConfidenceObject = object;
         }
 
-        // --- 화면 좌표 보정 (크롭된 화면 기준) ---
-        // object.x, y는 원본(video) 기준 좌표이므로 캔버스(400x400) 기준으로 변환 필요
-        // 1. 원본에서의 상대 위치 비율 계산
-        // 2. 캔버스 크기에 맞춰 매핑
-        
-        // 간단한 시각화를 위해 여기서는 rect를 그림 (정확한 매핑은 복잡하므로 근사치)
-        // 원본 영상에서 크롭된 영역(sx, sy, minDim, minDim) 안에 있는 것만 표시
-        
-        let objX = object.x - sx; // 크롭 시작점 뺌
-        let objY = object.y - sy;
-        
-        // 크롭 영역 밖이면 스킵 (화면에 안보임)
-        if (objX + object.width < 0 || objX > minDim || objY + object.height < 0 || objY > minDim) return;
-
-        // 비율 변환 (원본 크롭 영역 -> 캔버스 400px)
-        let scale = width / minDim;
-        
-        let drawX = objX * scale;
-        let drawY = objY * scale;
-        let drawW = object.width * scale;
-        let drawH = object.height * scale;
+        // [좌표 보정] 원본 좌표 -> 캔버스 좌표
+        let drawX = object.x * scaleX;
+        let drawY = object.y * scaleY;
+        let drawW = object.width * scaleX;
+        let drawH = object.height * scaleY;
 
         // 좌우 반전 처리
         if (isFlipped) {
@@ -359,16 +331,11 @@ function draw() {
     if (highestConfidenceObject) {
         let obj = highestConfidenceObject;
         
-        // 전송할 좌표도 캔버스(0~400) 기준으로 변환해서 보냄
-        // 그래야 로봇이 화면 중앙(200, 200)을 기준으로 판단 가능
-        let objX = obj.x - sx;
-        let objY = obj.y - sy;
-        let scale = width / minDim;
-        
-        let finalX = objX * scale;
-        let finalY = objY * scale;
-        let finalW = obj.width * scale;
-        let finalH = obj.height * scale;
+        // 전송할 좌표 계산 (캔버스 400x300 기준)
+        let finalX = obj.x * scaleX;
+        let finalY = obj.y * scaleY;
+        let finalW = obj.width * scaleX;
+        let finalH = obj.height * scaleY;
 
         let centerX = finalX + finalW / 2;
         let centerY = finalY + finalH / 2;
