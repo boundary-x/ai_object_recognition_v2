@@ -1,8 +1,10 @@
-/**
+/*
  * sketch.js
- * Boundary X Object Detection
- * Fixed: Camera Switch Bug & 4:3 Ratio
+ * Boundary X Object Detection (Powered by MediaPipe)
+ * Optimized for Mobile & Web
  */
+
+import { ObjectDetector, FilesetResolver } from "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.2";
 
 // Bluetooth UUIDs
 const UART_SERVICE_UUID = "6e400001-b5a3-f393-e0a9-e50e24dcca9e";
@@ -19,10 +21,9 @@ let isSendingData = false;
 let lastSentTime = 0; 
 const SEND_INTERVAL = 100; 
 
-// Video and ML variables
+// Video variables
 let video;
-let detector;
-let detections = [];
+let detections = []; // AI 감지 결과 저장소
 let selectedObjects = []; 
 let confidenceThreshold = 50; 
 let isObjectDetectionActive = false; 
@@ -33,6 +34,11 @@ let facingMode = "user";
 let isFlipped = false;  
 let isVideoReady = false; 
 
+// MediaPipe variables
+let objectDetector;
+let lastVideoTime = -1;
+let isModelLoaded = false;
+
 // UI elements
 let flipButton, switchCameraButton, connectBluetoothButton, disconnectBluetoothButton;
 let startDetectionButton, stopDetectionButton;
@@ -41,18 +47,40 @@ let confidenceLabel;
 let dataDisplay;
 let selectedObjectsListDiv; 
 
-function preload() {
-  detector = ml5.objectDetector("cocossd");
+// --- MediaPipe Initialization ---
+async function initializeMediaPipe() {
+  const vision = await FilesetResolver.forVisionTasks(
+    "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.2/wasm"
+  );
+  
+  objectDetector = await ObjectDetector.createFromOptions(vision, {
+    baseOptions: {
+      modelAssetPath: `https://storage.googleapis.com/mediapipe-models/object_detector/efficientdet_lite0/float16/1/efficientdet_lite0.tflite`,
+      delegate: "GPU" // 모바일 GPU 가속 활성화
+    },
+    scoreThreshold: 0.3, 
+    runningMode: "VIDEO"
+  });
+  
+  isModelLoaded = true;
+  console.log("MediaPipe Model Loaded!");
+  
+  // 버튼 텍스트 업데이트 (로딩 완료 알림)
+  if(startDetectionButton) startDetectionButton.html("사물 인식 시작");
 }
 
+// p5.js Setup
 function setup() {
-  // [수정] 400x300 (4:3 비율) 캔버스로 변경
+  // 400x300 (4:3 비율) 캔버스
   let canvas = createCanvas(400, 300);
   canvas.parent('p5-container');
   canvas.style('border-radius', '16px');
   
   setupCamera();
   createUI();
+  
+  // MediaPipe 로드 시작
+  initializeMediaPipe();
 }
 
 function setupCamera() {
@@ -124,6 +152,7 @@ function createUI() {
   objectSelect.parent('object-select-container');
   objectSelect.option("사물을 선택하세요", ""); 
   
+  // COCO-SSD 호환 80개 클래스
   const objectList = [
     "person", "bicycle", "car", "motorcycle", "airplane", "bus", "train", "truck", "boat", "traffic light",
     "fire hydrant", "stop sign", "parking meter", "bench", "bird", "cat", "dog", "horse", "sheep", "cow",
@@ -131,7 +160,7 @@ function createUI() {
     "skis", "snowboard", "sports ball", "kite", "baseball bat", "baseball glove", "skateboard", "surfboard",
     "tennis racket", "bottle", "wine glass", "cup", "fork", "knife", "spoon", "bowl", "banana", "apple",
     "sandwich", "orange", "broccoli", "carrot", "hot dog", "pizza", "donut", "cake", "chair", "couch",
-    "potted plant", "bed", "dining table", "toilet", "TV", "laptop", "mouse", "remote", "keyboard",
+    "potted plant", "bed", "dining table", "toilet", "tv", "laptop", "mouse", "remote", "keyboard",
     "cell phone", "microwave", "oven", "toaster", "sink", "refrigerator", "book", "clock", "vase",
     "scissors", "teddy bear", "hair drier", "toothbrush"
   ];
@@ -166,10 +195,14 @@ function createUI() {
   confidenceLabel.style('margin-top', '10px');
 
   // Control Buttons
-  startDetectionButton = createButton("사물 인식 시작");
+  startDetectionButton = createButton("모델 로딩 중...");
   startDetectionButton.parent('object-control-buttons');
   startDetectionButton.addClass('start-button');
   startDetectionButton.mousePressed(() => {
+    if (!isModelLoaded) {
+      alert("AI 모델을 불러오는 중입니다. 잠시만 기다려주세요.");
+      return;
+    }
     if (!isConnected) {
       alert("블루투스가 연결되어 있지 않습니다!");
       return;
@@ -239,7 +272,7 @@ function startObjectDetection() {
       return;
   }
   isObjectDetectionActive = true;
-  detector.detect(video, gotDetections); 
+  predictWebcam(); // MediaPipe 추론 시작
 }
 
 function stopObjectDetection() {
@@ -247,17 +280,37 @@ function stopObjectDetection() {
   detections = []; 
 }
 
-function gotDetections(error, results) {
-  if (error) {
-    console.error(error);
-    return;
+// --- MediaPipe Prediction Loop (최적화됨) ---
+async function predictWebcam() {
+  if (!isObjectDetectionActive || !isVideoReady || !video) return;
+
+  let startTimeMs = performance.now();
+
+  // 비디오 프레임이 갱신되었을 때만 추론 수행
+  if (video.elt.currentTime !== lastVideoTime) {
+    lastVideoTime = video.elt.currentTime;
+    
+    // MediaPipe 실행
+    const result = objectDetector.detectForVideo(video.elt, startTimeMs);
+    
+    // MediaPipe 결과를 기존 코드와 호환되는 포맷으로 변환
+    if (result.detections) {
+      detections = result.detections.map(d => {
+        return {
+          label: d.categories[0].categoryName.toLowerCase(), // 소문자 통일
+          confidence: d.categories[0].score, // 0.0 ~ 1.0
+          x: d.boundingBox.originX,
+          y: d.boundingBox.originY,
+          width: d.boundingBox.width,
+          height: d.boundingBox.height
+        };
+      });
+    }
   }
-  detections = results;
-  
-  if (isObjectDetectionActive && isVideoReady) {
-    setTimeout(() => {
-        detector.detect(video, gotDetections); 
-    }, 100); 
+
+  // 다음 프레임 요청 (재귀 호출)
+  if (isObjectDetectionActive) {
+    window.requestAnimationFrame(predictWebcam);
   }
 }
 
@@ -272,8 +325,7 @@ function draw() {
     return;
   }
 
-  // [수정] 4:3 전체 화면 그리기 (크롭 없음)
-  // 비디오가 캔버스보다 크면 자동으로 축소되어 그려짐 (fit)
+  // 화면 그리기
   push();
   if (isFlipped) {
     translate(width, 0);
@@ -286,11 +338,12 @@ function draw() {
     let highestConfidenceObject = null;
     let detectedCount = 0; 
 
-    // 화면 비율 계산 (비디오 원본 크기 vs 캔버스 크기)
-    let scaleX = width / video.width;
-    let scaleY = height / video.height;
+    // 화면 비율 계산 (MediaPipe 좌표 -> 캔버스 좌표)
+    let scaleX = width / video.elt.videoWidth;
+    let scaleY = height / video.elt.videoHeight;
 
     detections.forEach((object) => {
+      // 신뢰도 필터링
       if (selectedObjects.includes(object.label) && object.confidence * 100 >= confidenceThreshold) {
         
         detectedCount++;
@@ -299,18 +352,17 @@ function draw() {
           highestConfidenceObject = object;
         }
 
-        // [좌표 보정] 원본 좌표 -> 캔버스 좌표
+        // 좌표 보정
         let drawX = object.x * scaleX;
         let drawY = object.y * scaleY;
         let drawW = object.width * scaleX;
         let drawH = object.height * scaleY;
 
-        // 좌우 반전 처리
         if (isFlipped) {
             drawX = width - drawX - drawW;
         }
 
-        // 그리기
+        // 녹색 박스 그리기
         stroke(0, 255, 0); 
         strokeWeight(2);
         noFill();
@@ -327,11 +379,10 @@ function draw() {
       }
     });
 
-    // 데이터 전송
+    // 데이터 전송 로직 (블루투스)
     if (highestConfidenceObject) {
         let obj = highestConfidenceObject;
         
-        // 전송할 좌표 계산 (캔버스 400x300 기준)
         let finalX = obj.x * scaleX;
         let finalY = obj.y * scaleY;
         let finalW = obj.width * scaleX;
@@ -344,7 +395,7 @@ function draw() {
             centerX = width - centerX;
         }
         
-        // 파란색 박스 (타겟)
+        // 파란색 타겟 박스
         let bx = isFlipped ? width - finalX - finalW : finalX;
         stroke(0, 100, 255);
         strokeWeight(4);
@@ -364,7 +415,7 @@ function draw() {
   }
 }
 
-/* --- Bluetooth Logic --- */
+/* --- Bluetooth Logic (기존 동일) --- */
 
 async function connectBluetooth() {
   try {
@@ -442,3 +493,7 @@ async function sendBluetoothData(x, y, width, height, detectedCount) {
     isSendingData = false; 
   }
 }
+
+// 모듈 스코프 해결을 위해 전역 할당
+window.setup = setup;
+window.draw = draw;
