@@ -1,7 +1,7 @@
 /*
  * sketch.js
  * Boundary X Object Detection (Powered by MediaPipe)
- * Optimized for Mobile & Web
+ * UX Improved: Auto-Mirroring based on Camera Mode
  */
 
 import { ObjectDetector, FilesetResolver } from "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.2";
@@ -23,15 +23,15 @@ const SEND_INTERVAL = 100;
 
 // Video variables
 let video;
-let detections = []; // AI 감지 결과 저장소
+let detections = []; 
 let selectedObjects = []; 
 let confidenceThreshold = 50; 
 let isObjectDetectionActive = false; 
 let wasDetectingBeforeSwitch = false; 
 
 // Camera variables
-let facingMode = "user"; 
-let isFlipped = false;  
+let facingMode = "user"; // 기본: 전방 카메라
+let isFlipped = true;    // [UX 수정] 전방 카메라는 기본적으로 거울 모드(true)
 let isVideoReady = false; 
 
 // MediaPipe variables
@@ -40,7 +40,8 @@ let lastVideoTime = -1;
 let isModelLoaded = false;
 
 // UI elements
-let flipButton, switchCameraButton, connectBluetoothButton, disconnectBluetoothButton;
+// flipButton 제거됨
+let switchCameraButton, connectBluetoothButton, disconnectBluetoothButton;
 let startDetectionButton, stopDetectionButton;
 let objectSelect, confidenceSlider;
 let confidenceLabel;
@@ -56,7 +57,7 @@ async function initializeMediaPipe() {
   objectDetector = await ObjectDetector.createFromOptions(vision, {
     baseOptions: {
       modelAssetPath: `https://storage.googleapis.com/mediapipe-models/object_detector/efficientdet_lite0/float16/1/efficientdet_lite0.tflite`,
-      delegate: "GPU" // 모바일 GPU 가속 활성화
+      delegate: "GPU" 
     },
     scoreThreshold: 0.3, 
     runningMode: "VIDEO"
@@ -65,13 +66,11 @@ async function initializeMediaPipe() {
   isModelLoaded = true;
   console.log("MediaPipe Model Loaded!");
   
-  // 버튼 텍스트 업데이트 (로딩 완료 알림)
   if(startDetectionButton) startDetectionButton.html("사물 인식 시작");
 }
 
 // p5.js Setup
 function setup() {
-  // 400x300 (4:3 비율) 캔버스
   let canvas = createCanvas(400, 300);
   canvas.parent('p5-container');
   canvas.style('border-radius', '16px');
@@ -79,7 +78,6 @@ function setup() {
   setupCamera();
   createUI();
   
-  // MediaPipe 로드 시작
   initializeMediaPipe();
 }
 
@@ -125,11 +123,8 @@ function createUI() {
   dataDisplay = select('#dataDisplay');
   dataDisplay.html("전송 대기 중...");
 
-  // Camera Buttons
-  flipButton = createButton("좌우 반전");
-  flipButton.parent('camera-control-buttons');
-  flipButton.addClass('start-button');
-  flipButton.mousePressed(toggleFlip);
+  // [UX 수정] '좌우 반전' 버튼 코드 제거함
+  // flipButton 관련 코드 삭제
 
   switchCameraButton = createButton("전후방 전환");
   switchCameraButton.parent('camera-control-buttons');
@@ -152,7 +147,6 @@ function createUI() {
   objectSelect.parent('object-select-container');
   objectSelect.option("사물을 선택하세요", ""); 
   
-  // COCO-SSD 호환 80개 클래스
   const objectList = [
     "person", "bicycle", "car", "motorcycle", "airplane", "bus", "train", "truck", "boat", "traffic light",
     "fire hydrant", "stop sign", "parking meter", "bench", "bird", "cat", "dog", "horse", "sheep", "cow",
@@ -251,9 +245,7 @@ function renderSelectedObjects() {
     });
 }
 
-function toggleFlip() {
-  isFlipped = !isFlipped;
-}
+// [UX 수정] 수동 반전 토글 함수 제거됨 (toggleFlip)
 
 function switchCamera() {
   wasDetectingBeforeSwitch = isObjectDetectionActive;
@@ -262,7 +254,14 @@ function switchCamera() {
   stopVideo(); 
   isVideoReady = false;
   
+  // 카메라 모드 변경
   facingMode = facingMode === "user" ? "environment" : "user";
+  
+  // [UX 수정] 자동 반전 로직 적용
+  // user(전방) 모드이면 -> true (거울 모드)
+  // environment(후방) 모드이면 -> false (일반 모드)
+  isFlipped = (facingMode === "user");
+
   setTimeout(setupCamera, 500);
 }
 
@@ -272,7 +271,7 @@ function startObjectDetection() {
       return;
   }
   isObjectDetectionActive = true;
-  predictWebcam(); // MediaPipe 추론 시작
+  predictWebcam(); 
 }
 
 function stopObjectDetection() {
@@ -280,25 +279,22 @@ function stopObjectDetection() {
   detections = []; 
 }
 
-// --- MediaPipe Prediction Loop (최적화됨) ---
+// --- MediaPipe Prediction Loop ---
 async function predictWebcam() {
   if (!isObjectDetectionActive || !isVideoReady || !video) return;
 
   let startTimeMs = performance.now();
 
-  // 비디오 프레임이 갱신되었을 때만 추론 수행
   if (video.elt.currentTime !== lastVideoTime) {
     lastVideoTime = video.elt.currentTime;
     
-    // MediaPipe 실행
     const result = objectDetector.detectForVideo(video.elt, startTimeMs);
     
-    // MediaPipe 결과를 기존 코드와 호환되는 포맷으로 변환
     if (result.detections) {
       detections = result.detections.map(d => {
         return {
-          label: d.categories[0].categoryName.toLowerCase(), // 소문자 통일
-          confidence: d.categories[0].score, // 0.0 ~ 1.0
+          label: d.categories[0].categoryName.toLowerCase(), 
+          confidence: d.categories[0].score, 
           x: d.boundingBox.originX,
           y: d.boundingBox.originY,
           width: d.boundingBox.width,
@@ -308,7 +304,6 @@ async function predictWebcam() {
     }
   }
 
-  // 다음 프레임 요청 (재귀 호출)
   if (isObjectDetectionActive) {
     window.requestAnimationFrame(predictWebcam);
   }
@@ -325,7 +320,7 @@ function draw() {
     return;
   }
 
-  // 화면 그리기
+  // 화면 그리기 (isFlipped 값에 따라 자동 반전)
   push();
   if (isFlipped) {
     translate(width, 0);
@@ -338,12 +333,10 @@ function draw() {
     let highestConfidenceObject = null;
     let detectedCount = 0; 
 
-    // 화면 비율 계산 (MediaPipe 좌표 -> 캔버스 좌표)
     let scaleX = width / video.elt.videoWidth;
     let scaleY = height / video.elt.videoHeight;
 
     detections.forEach((object) => {
-      // 신뢰도 필터링
       if (selectedObjects.includes(object.label) && object.confidence * 100 >= confidenceThreshold) {
         
         detectedCount++;
@@ -352,17 +345,16 @@ function draw() {
           highestConfidenceObject = object;
         }
 
-        // 좌표 보정
         let drawX = object.x * scaleX;
         let drawY = object.y * scaleY;
         let drawW = object.width * scaleX;
         let drawH = object.height * scaleY;
 
+        // 반전 상태일 때 좌표 계산 (자동 적용됨)
         if (isFlipped) {
             drawX = width - drawX - drawW;
         }
 
-        // 녹색 박스 그리기
         stroke(0, 255, 0); 
         strokeWeight(2);
         noFill();
@@ -379,7 +371,6 @@ function draw() {
       }
     });
 
-    // 데이터 전송 로직 (블루투스)
     if (highestConfidenceObject) {
         let obj = highestConfidenceObject;
         
@@ -391,6 +382,7 @@ function draw() {
         let centerX = finalX + finalW / 2;
         let centerY = finalY + finalH / 2;
 
+        // 데이터 전송 좌표 계산
         if (isFlipped) {
             centerX = width - centerX;
         }
@@ -415,7 +407,7 @@ function draw() {
   }
 }
 
-/* --- Bluetooth Logic (기존 동일) --- */
+/* --- Bluetooth Logic (기존 유지) --- */
 
 async function connectBluetooth() {
   try {
@@ -494,6 +486,5 @@ async function sendBluetoothData(x, y, width, height, detectedCount) {
   }
 }
 
-// 모듈 스코프 해결을 위해 전역 할당
 window.setup = setup;
 window.draw = draw;
