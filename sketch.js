@@ -96,7 +96,9 @@ async function switchDelegate(newDelegate) {
   if (newDelegate === selectedDelegate) return;
 
   const wasActive = isObjectDetectionActive;
-  isObjectDetectionActive = false; // 재로딩 중 잘못된 인식/전송 방지
+  if (isObjectDetectionActive) {
+    stopObjectDetection(); // 모델을 다시 불러오는 동안 로봇이 이전 상태로 계속 움직이지 않도록 안전 정지
+  }
 
   if (delegateStatusDiv) delegateStatusDiv.html("⏳ AI 모델을 다시 불러오는 중입니다...");
   if (startDetectionButton) startDetectionButton.html("모델 로딩 중...");
@@ -367,16 +369,8 @@ function createUI() {
   stopDetectionButton = createButton("인식 중지");
   stopDetectionButton.parent('object-control-buttons');
   stopDetectionButton.addClass('stop-button');
-  stopDetectionButton.mousePressed(async () => {
-    stopObjectDetection();
-    const sent = await sendBluetoothDataReliable("stop"); // 정지 시 Stop 신호 전송 (재시도 포함)
-    if (sent) {
-      dataDisplay.html("전송됨: 없음 (Stop)");
-      dataDisplay.style("color", "#888");
-    } else {
-      dataDisplay.html("⚠️ 정지 신호 전송 실패 - 연결을 확인해주세요");
-      dataDisplay.style("color", "#EA4335");
-    }
+  stopDetectionButton.mousePressed(() => {
+    stopObjectDetection(); // 정지 + stop 신호 전송(재시도 포함)까지 여기서 처리됨
   });
 
   updateBluetoothStatusUI();
@@ -447,7 +441,9 @@ function renderSelectedObjects() {
 
 function switchCamera() {
   wasDetectingBeforeSwitch = isObjectDetectionActive;
-  isObjectDetectionActive = false; 
+  if (isObjectDetectionActive) {
+    stopObjectDetection(); // 전환하는 동안 로봇이 이전 상태로 계속 움직이지 않도록 안전 정지
+  }
   stopVideo(); 
   isVideoReady = false;
   
@@ -464,9 +460,22 @@ function startObjectDetection() {
   predictWebcam(); 
 }
 
-function stopObjectDetection() {
+// 인식을 멈추고, sendStopSignal이 true면 마이크로비트에 stop 신호도 함께 전송
+async function stopObjectDetection(sendStopSignal = true) {
   isObjectDetectionActive = false;
-  detections = []; 
+  detections = [];
+
+  if (!sendStopSignal) return;
+
+  const sent = await sendBluetoothDataReliable("stop");
+  if (sent) {
+    dataDisplay.html("전송됨: 없음 (Stop)");
+    dataDisplay.style("color", "#888");
+  } else if (isConnected) {
+    // 연결은 되어있는데 전송만 실패한 경우에만 표시 (연결 자체가 끊긴 경우는 onDisconnected가 별도 처리)
+    dataDisplay.html("⚠️ 정지 신호 전송 실패 - 연결을 확인해주세요");
+    dataDisplay.style("color", "#EA4335");
+  }
 }
 
 // MediaPipe Inference Loop
@@ -531,9 +540,10 @@ function onDisconnected() {
   bluetoothDevice = null;
 
   // 연결이 끊기면 인식도 함께 자동 중지 — 끊긴 채로 계속 돌아가는 것 방지
+  // 이미 연결이 끊긴 상태라 stop 신호를 보내려는 시도(재시도 포함) 자체가 무의미하므로 생략
   const wasDetecting = isObjectDetectionActive;
   if (isObjectDetectionActive) {
-    stopObjectDetection();
+    stopObjectDetection(false);
   }
 
   if (isManualDisconnect) {
