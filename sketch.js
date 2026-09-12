@@ -6,7 +6,7 @@
  *           Lower-res capture + throttled inference for low-end phones
  */
 
-import { ObjectDetector, FilesetResolver } from "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.2";
+import { ObjectDetector, FilesetResolver } from "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@1.0.1";
 
 // --- Bluetooth UUIDs (Microbit UART) ---
 const UART_SERVICE_UUID = "6e400001-b5a3-f393-e0a9-e50e24dcca9e";
@@ -74,7 +74,7 @@ let delegateSelect, delegateStatusDiv;
 // --- MediaPipe Initialization ---
 async function initializeMediaPipe() {
   const vision = await FilesetResolver.forVisionTasks(
-    "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.2/wasm"
+    "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@1.0.1/wasm"
   );
   
   objectDetector = await ObjectDetector.createFromOptions(vision, {
@@ -627,3 +627,4 @@ async function sendBluetoothDataReliable(data, maxRetries = 5, retryDelayMs = 80
 // Global Scope Export (for HTML)
 window.setup = setup;
 window.draw = draw;
+

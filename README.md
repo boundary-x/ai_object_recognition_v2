@@ -66,3 +66,12 @@ x{X_Center}y{Y_Center}w{Width}h{Height}d{Count}\n
 - All rights to the source code and design of this project belong to BoundaryX.
 - Web: boundaryx.io
 - Contact: https://boundaryx.io/contact
+
+
+## MediaPipe 1.0.1 upgrade
+
+Both the JavaScript module and WASM runtime are pinned to @mediapipe/tasks-vision 1.0.1. The EfficientDet Lite0 Float16 v1 model, capture resolution, inference interval, delegate switching, and Bluetooth protocol are retained.
+
+MediaPipe processes input images/video on the device. Its current privacy notice states that API performance and utilization metrics are sent to Google. See https://goo.gle/mediapipe-privacy.
+
+Validation: node tests/upgrade.cjs (requires Node.js, Playwright, Microsoft Edge, and internet access). The test compares 0.10.2 and 1.0.1 using the real model with simulated camera input, GPU/CPU/GPU reinitialization, and simulated BLE payload/stop checks. This is compatibility testing, not an accuracy or performance benchmark; physical smartphones and micro:bit hardware were not tested.
