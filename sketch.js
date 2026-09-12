@@ -194,21 +194,14 @@ function draw() {
             stroke(0, 100, 255); strokeWeight(4); noFill();
             rect(drawX, drawY, drawW, drawH);
             
-            // 라벨 배경
-            noStroke(); fill(0, 100, 255);
-            rect(drawX, drawY > 20 ? drawY - 25 : drawY, textWidth(object.label) + 55, 25);
-            
-            // 라벨 텍스트
-            fill(255); textSize(16); textStyle(BOLD);
-            text(`${object.label} ${(object.confidence * 100).toFixed(0)}%`, drawX + 5, drawY > 20 ? drawY - 7 : drawY + 18);
+            drawObjectLabel(object, drawX, drawY, true);
             
         } else {
             // [Others] 초록색 얇은 박스
             stroke(0, 255, 0); strokeWeight(2); noFill();
             rect(drawX, drawY, drawW, drawH);
             
-            noStroke(); fill(0, 255, 0); textSize(14); textStyle(NORMAL);
-            text(`${object.label} ${(object.confidence * 100).toFixed(0)}%`, drawX + 5, drawY > 20 ? drawY - 5 : drawY + 20);
+            drawObjectLabel(object, drawX, drawY, false);
         }
       }
     });
@@ -248,6 +241,35 @@ function draw() {
           lastSentTime = currentTime;
       }
   }
+}
+
+// Measure and render with identical font settings; isolate p5's persistent text state.
+function drawObjectLabel(object, x, y, isTarget) {
+  push();
+  textSize(isTarget ? 16 : 14);
+  textStyle(isTarget ? BOLD : NORMAL);
+  textAlign(LEFT, BASELINE);
+  rectMode(CORNER);
+  noStroke();
+  const paddingX = 5, paddingY = 4;
+  let label = object.label + ' ' + (object.confidence * 100).toFixed(0) + '%';
+  const maxTextWidth = Math.max(0, width - 2 * paddingX);
+  if (textWidth(label) > maxTextWidth) {
+    while (label.length && textWidth(label + '…') > maxTextWidth) label = label.slice(0, -1);
+    label += '…';
+  }
+  const labelWidth = textWidth(label) + 2 * paddingX;
+  const ascent = textAscent(), descent = textDescent();
+  const labelHeight = ascent + descent + 2 * paddingY;
+  const labelX = Math.max(0, Math.min(x, width - labelWidth));
+  const labelY = Math.max(0, Math.min(y >= labelHeight ? y - labelHeight : y, height - labelHeight));
+  if (isTarget) {
+    fill(0, 100, 255);
+    rect(labelX, labelY, labelWidth, labelHeight);
+    fill(255);
+  } else fill(0, 255, 0);
+  text(label, labelX + paddingX, labelY + paddingY + ascent);
+  pop();
 }
 
 // --- Helper Functions ---
