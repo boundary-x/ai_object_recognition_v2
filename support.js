@@ -23,6 +23,7 @@ support.innerHTML = `
 <details><summary>여러 사물이 보이는데 좌표는 하나만 나와요</summary><p>선택한 종류와 정확도 기준을 통과한 사물 중 신뢰도가 가장 높은 하나의 좌표·크기를 전송합니다. 해당 대상은 파란색, 나머지는 초록색으로 표시됩니다. d는 조건을 통과한 사물의 총 개수입니다.</p></details>
 <details><summary>데이터 형식과 정지 신호는 무엇인가요?</summary><p>예: x200y150w80h60d2. x·y는 400×300 캔버스 기준 중심 좌표, w·h는 너비·높이, d는 조건을 통과한 감지 수입니다. 표시 화면의 CSS 크기가 달라도 좌표 기준은 같습니다.</p><p>대상이 없거나 인식을 중지하면 stop을 보냅니다. 연결이 끊어지면 앱의 인식도 중지되지만 끊어진 연결로 정지 명령을 보낼 수는 없습니다.</p></details>
 </div></details>
+<details class="support-section" id="help-materials"><summary>수업 자료</summary><div class="support-answer"><p><a href="https://1drv.ms/p/c/fae158da74b76feb/IQBfcQO5Oi5dSaaVGhmAw1DgAdhol7RluvH3Cr0XnhEYq7E?e=oCV0TQ" target="_blank" rel="noopener noreferrer">사물의 종류를 인식해 사람을 따라오는 AI 대상추종로봇 (with AI 포니봇) ↗</a></p><p class="support-caption">소개 페이지에 연결된 교안입니다. 화면과 조작법은 현재 앱의 사용 가이드를 기준으로 확인하세요.</p></div></details>
 <details class="support-section" id="help-updates"><summary>업데이트 노트 <span class="support-meta">최근 변경</span></summary><div class="support-answer"><p class="support-release">사용 가이드 및 지원 추가</p><ul><li>사물 설정·기기 연결·데이터 확인을 통합한 화면 안내</li><li>예제 코드와 문제 해결을 앱 안에서 확인</li></ul><p class="support-release">최근 개선</p><ul><li>MediaPipe JavaScript·WASM 1.0.1 적용</li><li>라벨 글꼴 측정·정렬 및 화면 가장자리 표시 수정</li><li>수정된 스크립트를 불러오도록 파일 버전 지정</li></ul></div></details>
 <a class="support-original" href="https://boundaryx.io/ai/?bmode=view&idx=163120313" target="_blank" rel="noopener noreferrer">개념 설명 · 프로젝트 아이디어 보기 ↗</a>
 </div>`;
