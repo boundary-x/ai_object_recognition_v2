@@ -75,3 +75,20 @@ Both the JavaScript module and WASM runtime are pinned to @mediapipe/tasks-visio
 MediaPipe processes input images/video on the device. Its current privacy notice states that API performance and utilization metrics are sent to Google. See https://goo.gle/mediapipe-privacy.
 
 Validation: node tests/upgrade.cjs (requires Node.js, Playwright, Microsoft Edge, and internet access). The test compares 0.10.2 and 1.0.1 using the real model with simulated camera input, GPU/CPU/GPU reinitialization, and simulated BLE payload/stop checks. This is compatibility testing, not an accuracy or performance benchmark; physical smartphones and micro:bit hardware were not tested.
+
+## In-app guide and support
+
+Open **Help (도움말)** in the header or expand **사용 가이드 및 지원** below the controls. The 11-step walkthrough covers object selection, confidence, camera switching, micro:bit setup, connection, start/stop, coordinates, and GPU/CPU settings. It highlights the current controls without changing settings or starting detection. Use chapter buttons, Previous/Next, or Escape to close; the connection chapter can be skipped in the walkthrough, but Bluetooth connection is required to start detection in this app.
+
+The example section provides separate links for:
+- [micro:bit Bluetooth name](https://makecode.microbit.org/S49771-77509-50114-72682): read the five lowercase letters on the LED matrix, then install the project code.
+- [Object data project](https://makecode.microbit.org/S32368-56120-50992-39988).
+- [Ponybot target following](https://makecode.microbit.org/#pub:11066-23811-50503-78222).
+
+Troubleshooting covers camera/model loading, start requirements, confidence filtering, performance, Bluetooth, multiple targets, and packet interpretation. The model filters scores below 30% before the UI threshold is applied. The `d` field counts selected objects passing that threshold. Coordinates refer to the 400 by 300 canvas. Missing targets and manual stop send `stop` followed by a newline when connected; the display is not a receiver acknowledgement.
+
+### Running and testing
+
+End users open the hosted app in a compatible browser; **Node.js is not required**. Camera and Bluetooth access require a secure context (HTTPS, or localhost for development). Deploy `index.html`, `style.css`, `sketch.js`, `support.css`, and `support.js` together.
+
+Developers can run `node tests/support.cjs` and `node tests/upgrade.cjs` with Node.js, Playwright, Microsoft Edge, and internet access. `BROWSER_CHANNEL` and `TEST_ARTIFACTS` can configure the support test browser and screenshot directory. See [VALIDATION.md](VALIDATION.md) for coverage and limitations.

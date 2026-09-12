@@ -409,6 +409,9 @@ function createDelegateUI() {
   const group = createDiv();
   group.addClass('control-group');
   group.parent(controlsSection);
+  group.id('delegate-settings');
+  const supportCard = document.getElementById('support-card');
+  if (supportCard) supportCard.before(group.elt);
 
   const heading = createElement('h3', '⚙️ AI 연산 장치 설정');
   heading.parent(group);
