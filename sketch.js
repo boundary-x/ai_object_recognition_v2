@@ -227,16 +227,10 @@ function draw() {
               if (isFlipped) centerX = width - centerX;
 
               const packet = `x${Math.round(centerX)}y${Math.round(centerY)}w${Math.round(finalW)}h${Math.round(finalH)}d${detectedCount}`;
-              sendBluetoothData(packet);
-
-              const dataStr = `x${Math.round(centerX)} y${Math.round(centerY)} w${Math.round(finalW)} h${Math.round(finalH)} d${detectedCount}`;
-              dataDisplay.html(`전송됨: ${dataStr}`);
-              dataDisplay.style("color", "#0f0");
+              previewOrSend(packet);
           } else {
               // 사물 없음 -> Stop 신호 전송
-              sendBluetoothData("stop");
-              dataDisplay.html(`전송됨: 없음 (Stop)`);
-              dataDisplay.style("color", "#888");
+              previewOrSend("stop");
           }
           lastSentTime = currentTime;
       }
@@ -383,7 +377,6 @@ function createUI() {
   startDetectionButton.addClass('start-button');
   startDetectionButton.mousePressed(() => {
     if (!isModelLoaded) { alert("AI 모델 로딩 중입니다."); return; }
-    if (!isConnected) { alert("블루투스가 연결되지 않았습니다!"); return; }
     if (selectedObjects.length === 0) { alert("사물을 선택해주세요."); return; }
     startObjectDetection();
   });
@@ -482,6 +475,7 @@ function switchCamera() {
 function startObjectDetection() {
   if (!isVideoReady) { console.warn("카메라 준비 안됨"); return; }
   isObjectDetectionActive = true;
+  dataDisplay.html(isConnected ? "전송 대기 중..." : "전송할 데이터: 인식 결과 대기 중...");
   predictWebcam(); 
 }
 
@@ -491,6 +485,11 @@ async function stopObjectDetection(sendStopSignal = true) {
   detections = [];
 
   if (!sendStopSignal) return;
+  if (!isConnected || !rxCharacteristic) {
+    dataDisplay.html("인식 중지됨");
+    dataDisplay.style("color", "#888");
+    return;
+  }
 
   const sent = await sendBluetoothDataReliable("stop");
   if (sent) {
@@ -528,6 +527,21 @@ async function predictWebcam() {
     }
   }
   if (isObjectDetectionActive) window.requestAnimationFrame(predictWebcam);
+}
+
+// Preview the exact wire payload; only report sent after a successful BLE write.
+async function previewOrSend(packet) {
+  if (!isConnected || !rxCharacteristic) {
+    dataDisplay.html('전송할 데이터: ' + packet);
+    dataDisplay.style('color', packet === 'stop' ? '#aaa' : '#0f0');
+    return;
+  }
+  if (isSendingData) return;
+  const target = rxCharacteristic;
+  const sent = await sendBluetoothData(packet);
+  if (!isObjectDetectionActive || !isConnected || rxCharacteristic !== target) return;
+  dataDisplay.html((sent ? '전송됨: ' : '전송 실패: ') + packet);
+  dataDisplay.style('color', sent ? (packet === 'stop' ? '#aaa' : '#0f0') : '#EA4335');
 }
 
 // --- Bluetooth Logic ---
@@ -652,4 +666,5 @@ async function sendBluetoothDataReliable(data, maxRetries = 5, retryDelayMs = 80
 // Global Scope Export (for HTML)
 window.setup = setup;
 window.draw = draw;
+
 
