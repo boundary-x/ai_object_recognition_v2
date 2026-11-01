@@ -6,7 +6,7 @@ const support = $('support-card');
 support.innerHTML = `
 <summary><span><strong>사용 가이드 및 지원</strong><small>사용법 · 예제 코드 · 문제 해결</small></span><span class="support-chevron" aria-hidden="true">⌄</span></summary>
 <div class="support-content">
-<p class="support-intro">사물을 선택하고 위치·크기 데이터를 프로젝트에 활용해보세요.</p>
+<p class="support-intro">사물을 선택하고 위치·크기 데이터를 프로젝트에 활용해보세요. 블루투스 연결 없이 인식하고 전송할 데이터를 먼저 확인할 수 있습니다. 기기를 연결하면 실제 데이터를 전송합니다.</p>
 <div class="support-actions"><button type="button" data-tour="all" class="support-primary">사용법 둘러보기 <span aria-hidden="true">→</span></button></div>
 <details class="support-section" id="help-examples"><summary>마이크로비트 예제 코드</summary><div class="support-answer example-codes">
 <div class="example-code"><a href="https://makecode.microbit.org/S49771-77509-50114-72682" target="_blank" rel="noopener noreferrer">블루투스 이름 확인 코드 ↗</a><p>연결할 마이크로비트의 장치 이름을 확인합니다. 마이크로비트의 LED 매트릭스에 출력되는 이름(알파벳 소문자 5자리)을 확인한 뒤 아래 프로젝트 코드를 다운로드하세요.</p></div>
@@ -16,7 +16,7 @@ support.innerHTML = `
 </div></details>
 <details class="support-section" id="help-troubleshooting"><summary>문제 해결 <span class="support-meta">증상별 안내</span></summary><div class="support-answer support-faq">
 <details><summary>카메라나 모델이 준비되지 않아요</summary><p>카메라 권한을 허용하고 인터넷 연결을 확인하세요. 다른 앱이 카메라를 사용 중이면 종료하세요. 모델 로딩 후 시작 버튼이 ‘사물 인식 시작’으로 바뀝니다.</p></details>
-<details><summary>사물 인식이 시작되지 않아요</summary><p>이 앱은 모델 로딩, 블루투스 연결, 인식할 사물 선택이 완료되어야 시작할 수 있습니다. 지원 목록에서 person, cup 등 필요한 사물을 추가하세요. 별도 ID 학습 기능은 없습니다.</p></details>
+<details><summary>사물 인식이 시작되지 않아요</summary><p>이 앱은 모델 로딩과 인식할 사물 선택이 완료되어야 시작할 수 있습니다. 지원 목록에서 person, cup 등 필요한 사물을 추가하세요. 별도 ID 학습 기능은 없습니다.</p></details>
 <details><summary>선택한 사물이 잘 인식되지 않아요</summary><p>밝은 곳에서 대상이 충분히 크게 보이게 촬영하세요. 정확도 기준을 낮추면 더 많은 결과를 표시하지만 잘못 인식할 가능성도 커집니다. 현재 모델은 30% 미만 결과를 먼저 제외하므로 슬라이더를 그 아래로 낮춰도 해당 결과가 나타나지는 않습니다.</p></details>
 <details><summary>화면이 느리거나 GPU 실행이 불안정해요</summary><p>AI 연산 장치 설정에서 CPU를 시도해보세요. 전환 시 모델을 다시 불러오며, 진행 중이던 인식은 전환 후 재개됩니다. 어느 모드가 빠른지는 기기에 따라 다릅니다.</p></details>
 <details id="help-connection"><summary>블루투스가 연결되지 않거나 기기가 움직이지 않아요</summary><p>마이크로비트 전원과 예제 코드 다운로드 여부를 확인하세요. MakeCode 프로젝트의 블루투스 페어링 설정과 브라우저의 Web Bluetooth 지원 여부를 확인하고, 다른 앱과 연결되어 있다면 해제하세요.</p><p>기기 코드는 x·y·w·h·d와 stop을 읽어야 합니다. 화면의 데이터 표시만으로 수신 성공을 확인할 수는 없으므로 연결 상태와 기기의 반응도 함께 확인하세요.</p></details>
@@ -35,8 +35,8 @@ const recognition=[
 ];
 const device=[
 ['#project-example-link','마이크로비트 예제를 준비하세요','이름 확인 코드로 장치를 확인한 뒤 데이터 수신 예제 또는 AI 포니봇 예제를 다운로드하세요. 현재 정지 문자열은 stop입니다.'],
-['#bluetooth-control-buttons','마이크로비트를 연결하세요','기기 연결에서 내 장치를 선택하세요. 실제 인식을 시작하려면 블루투스 연결이 필요합니다. 안내만 둘러보는 동안은 연결하지 않아도 됩니다.'],
-['#object-control-buttons','사물 인식을 시작하세요','모델 로딩과 기기 연결, 사물 선택을 마친 뒤 ‘사물 인식 시작’을 누르세요. 선택한 종류 중 정확도 기준을 통과한 사물을 표시합니다.'],
+['#bluetooth-control-buttons','마이크로비트를 연결하세요','기기 연결에서 내 장치를 선택하세요. 연결 없이도 인식하고 전송할 데이터를 확인할 수 있습니다. 실제 기기 전송에만 연결이 필요합니다.'],
+['#object-control-buttons','사물 인식을 시작하세요','모델 로딩과 사물 선택을 마친 뒤 ‘사물 인식 시작’을 누르세요. 선택한 종류 중 정확도 기준을 통과한 사물을 표시합니다.'],
 ['#object-control-buttons','작업을 마치면 인식을 중지하세요','인식 중지를 누르면 stop 전송을 시도합니다. 선택한 대상이 감지되지 않을 때도 stop을 보냅니다. 기기 코드에서 이를 받아 정지하도록 설정하세요.']
 ];
 const data=[
@@ -149,4 +149,6 @@ const chapters=[{label:'사물 설정',start:0},{label:'기기 연결',start:rec
   window.addEventListener('scroll', reposition, {passive:true});
   if (location.hash === '#support-card') requestAnimationFrame(() => openHelp());
 })();
+
+
 
