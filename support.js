@@ -8,11 +8,14 @@ support.innerHTML = `
 <div class="support-content">
 <p class="support-intro">사물을 선택하고 위치·크기 데이터를 프로젝트에 활용해보세요. 블루투스 연결 없이 인식하고 전송할 데이터를 먼저 확인할 수 있습니다. 기기를 연결하면 실제 데이터를 전송합니다.</p>
 <div class="support-actions"><button type="button" data-tour="all" class="support-primary">사용법 둘러보기 <span aria-hidden="true">→</span></button></div>
-<details class="support-section" id="help-examples"><summary>마이크로비트 예제 코드</summary><div class="support-answer example-codes">
-<div class="example-code"><a href="https://makecode.microbit.org/S49771-77509-50114-72682" target="_blank" rel="noopener noreferrer">블루투스 이름 확인 코드 ↗</a><p>연결할 마이크로비트의 장치 이름을 확인합니다. 마이크로비트의 LED 매트릭스에 출력되는 이름(알파벳 소문자 5자리)을 확인한 뒤 아래 프로젝트 코드를 다운로드하세요.</p></div>
-<div class="example-code"><a id="project-example-link" href="https://makecode.microbit.org/S32368-56120-50992-39988" target="_blank" rel="noopener noreferrer">프로젝트 예제 · 사물인식 데이터 수신 ↗</a><p>중심 좌표 x·y, 너비 w, 높이 h, 감지 수 d를 읽어 프로젝트에 활용하는 예제입니다.</p></div>
-<div class="example-code"><a href="https://makecode.microbit.org/#pub:11066-23811-50503-78222" target="_blank" rel="noopener noreferrer">프로젝트 예제 · AI 포니봇 대상추종로봇 ↗</a><p>선택한 대상을 따라 움직이는 AI 포니봇 연동 예제입니다.</p></div>
-<p class="support-caption">현재 앱의 정지 신호는 stop입니다. 예제에서도 stop 수신 시 정지하도록 설정하세요. 다운로드하면 마이크로비트의 이전 코드가 교체됩니다.</p>
+<details class="support-section" id="help-examples"><summary>내 기기에 맞는 예제</summary><div class="support-answer device-examples">
+<p class="device-intro">마이크로비트만 있어도 사용할 수 있어요.<br>사용할 기기에 맞는 예제를 선택해주세요.</p>
+<div class="device-prepare"><span class="prepare-label">공통 준비</span><a href="https://makecode.microbit.org/S49771-77509-50114-72682" target="_blank" rel="noopener noreferrer">블루투스 이름 확인 코드 <span aria-hidden="true">↗</span></a><p>연결할 마이크로비트의 LED에 표시되는 이름(알파벳 소문자 5자리)을 확인한 뒤 아래 예제를 다운로드하세요.</p></div>
+<div class="device-example-list">
+<article class="device-example-card"><div class="device-example-heading"><h4>마이크로비트 기본</h4><span class="device-tag">마이크로비트만 사용</span></div><p>사물의 중심 좌표 x·y, 너비 w, 높이 h, 감지 수 d를 읽어 프로젝트에 활용해보세요.</p><div class="device-example-links"><a id="project-example-link" href="https://makecode.microbit.org/S32368-56120-50992-39988" target="_blank" rel="noopener noreferrer">사물 인식 데이터 수신 <span aria-hidden="true">↗</span></a></div></article>
+<article class="device-example-card"><div class="device-example-heading"><h4>AI 포니봇</h4><span class="device-tag">포니봇 사용</span></div><p>선택한 대상을 따라 움직이는 AI 포니봇을 만들어보세요.</p><div class="device-example-links"><a href="https://makecode.microbit.org/#pub:11066-23811-50503-78222" target="_blank" rel="noopener noreferrer">대상 추종 로봇 <span aria-hidden="true">↗</span></a></div></article>
+<article class="device-example-card"><div class="device-example-heading"><h4>비트런(이족보행로봇)</h4><span class="device-tag">비트런 사용</span></div><p>비트런용 사물 인식 예제는 준비 중입니다.</p><div class="device-example-links"><span class="device-coming-soon">예제 준비 중</span></div></article>
+</div><p class="device-note">현재 앱의 정지 신호는 stop입니다. 예제에서도 stop 수신 시 정지하도록 설정하세요. 예제를 다운로드하면 마이크로비트의 기존 코드가 교체됩니다.</p>
 </div></details>
 <details class="support-section" id="help-troubleshooting"><summary>문제 해결 <span class="support-meta">증상별 안내</span></summary><div class="support-answer support-faq">
 <details><summary>카메라나 모델이 준비되지 않아요</summary><p>카메라 권한을 허용하고 인터넷 연결을 확인하세요. 다른 앱이 카메라를 사용 중이면 종료하세요. 모델 로딩 후 시작 버튼이 ‘사물 인식 시작’으로 바뀝니다.</p></details>
@@ -24,7 +27,7 @@ support.innerHTML = `
 <details><summary>데이터 형식과 정지 신호는 무엇인가요?</summary><p>예: x200y150w80h60d2. x·y는 400×300 캔버스 기준 중심 좌표, w·h는 너비·높이, d는 조건을 통과한 감지 수입니다. 표시 화면의 CSS 크기가 달라도 좌표 기준은 같습니다.</p><p>대상이 없거나 인식을 중지하면 stop을 보냅니다. 연결이 끊어지면 앱의 인식도 중지되지만 끊어진 연결로 정지 명령을 보낼 수는 없습니다.</p></details>
 </div></details>
 <details class="support-section" id="help-materials"><summary>수업 자료</summary><div class="support-answer"><p><a href="https://1drv.ms/p/c/fae158da74b76feb/IQBfcQO5Oi5dSaaVGhmAw1DgAdhol7RluvH3Cr0XnhEYq7E?e=oCV0TQ" target="_blank" rel="noopener noreferrer">사물의 종류를 인식해 사람을 따라오는 AI 대상추종로봇 (with AI 포니봇) ↗</a></p><p class="support-caption">소개 페이지에 연결된 교안입니다. 화면과 조작법은 현재 앱의 사용 가이드를 기준으로 확인하세요.</p></div></details>
-<details class="support-section" id="help-updates"><summary>업데이트 노트 <span class="support-meta">최근 변경</span></summary><div class="support-answer"><p class="support-release">사용 가이드 및 지원 추가</p><ul><li>사물 설정·기기 연결·데이터 확인을 통합한 화면 안내</li><li>예제 코드와 문제 해결을 앱 안에서 확인</li></ul><p class="support-release">최근 개선</p><ul><li>MediaPipe JavaScript·WASM 1.0.1 적용</li><li>라벨 글꼴 측정·정렬 및 화면 가장자리 표시 수정</li><li>수정된 스크립트를 불러오도록 파일 버전 지정</li></ul></div></details>
+<details class="support-section" id="help-updates"><summary>업데이트 노트 <span class="support-meta">최근 변경</span></summary><div class="support-answer"><p class="support-release">2026.11.02 · 기기별 예제 카드 구성 통일</p><ul><li>공통 준비와 기기별 예제를 카드로 구분</li><li>마이크로비트 데이터 수신·AI 포니봇 대상 추종 예제 연결 유지</li><li>비트런(이족보행로봇) 예제 준비 상태 안내</li></ul><p class="support-release">사용 가이드 및 지원 추가</p><ul><li>사물 설정·기기 연결·데이터 확인을 통합한 화면 안내</li><li>예제 코드와 문제 해결을 앱 안에서 확인</li></ul><p class="support-release">최근 개선</p><ul><li>MediaPipe JavaScript·WASM 1.0.1 적용</li><li>라벨 글꼴 측정·정렬 및 화면 가장자리 표시 수정</li><li>수정된 스크립트를 불러오도록 파일 버전 지정</li></ul></div></details>
 <a class="support-original" href="https://boundaryx.io/ai/?bmode=view&idx=163120313" target="_blank" rel="noopener noreferrer">개념 설명 · 프로젝트 아이디어 보기 ↗</a>
 </div>`;
 const recognition=[
