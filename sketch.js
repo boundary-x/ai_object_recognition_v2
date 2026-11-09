@@ -548,14 +548,14 @@ async function previewOrSend(packet) {
 
 async function connectBluetooth() {
   try {
-    bluetoothDevice = await navigator.bluetooth.requestDevice({
+    bluetoothDevice = await BoardLink.requestDevice({
       filters: [{ namePrefix: "BBC micro:bit" }],
       optionalServices: [UART_SERVICE_UUID]
     });
     const server = await bluetoothDevice.gatt.connect();
     const service = await server.getPrimaryService(UART_SERVICE_UUID);
-    rxCharacteristic = await service.getCharacteristic(UART_RX_CHARACTERISTIC_UUID);
-    txCharacteristic = await service.getCharacteristic(UART_TX_CHARACTERISTIC_UUID);
+    rxCharacteristic = await BoardLink.getCharacteristic(service,UART_RX_CHARACTERISTIC_UUID);
+    txCharacteristic = await BoardLink.getCharacteristic(service,UART_TX_CHARACTERISTIC_UUID);
     txCharacteristic.startNotifications();
 
     // 마이크로비트가 범위를 벗어나거나 전원이 꺼지는 등 예기치 않게 끊겼을 때도 상태를 동기화
